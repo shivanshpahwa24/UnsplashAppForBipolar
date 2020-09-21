@@ -1,24 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import Header from "./components/Header";
+import Navbar from "./components/Navbar";
+
+import Loader from "./components/Loader";
+import InfiniteScroll from "react-infinite-scroll-component";
+import ImageContainer from "./components/ImageContainer";
+import "./App.css";
+import { BrowserRouter } from "react-router-dom";
 
 function App() {
+  const [images, setImage] = useState([]);
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  const fetchImages = async () => {
+    const apiRoot = "https://api.unsplash.com";
+    const accessKey = process.env.REACT_APP_ACCESSKEY;
+    try {
+      const response = await fetch(
+        `${apiRoot}/collections/139386/photos?client_id=${accessKey}`
+      );
+      const data = await response.json();
+
+      setImage([...images, ...data]);
+      console.log(data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div className="page-container">
+      <BrowserRouter>
+        {" "}
+        <Navbar />
+        <Header />
+        <InfiniteScroll
+          dataLength={images.length}
+          next={fetchImages}
+          hasMore={true}
+          loader={<Loader />}
         >
-          Learn React
-        </a>
-      </header>
+          <ImageContainer images={images} />
+        </InfiniteScroll>
+      </BrowserRouter>
     </div>
   );
 }
